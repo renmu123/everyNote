@@ -80,9 +80,9 @@ const data = {
   "8d857776-f24b-4f5e-87ae-64513363f624": {
     type: "markdown",
     id: "8d857776-f24b-4f5e-87ae-64513363f624",
-    conntent: `
-     # dada
-     大大大大大叔的
+    content: `
+# dada
+大大大大大叔的
      `
   }
 };

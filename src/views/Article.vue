@@ -1,11 +1,13 @@
 <template>
-  <vue-markdown
-    :toc="true"
-    toc-id="toc"
-    :toc-anchor-link="false"
-    :toc-first-level="1"
-    >{{ message }}</vue-markdown
-  >
+  <div>
+    <vue-markdown
+      :toc="true"
+      toc-id="toc"
+      :toc-anchor-link="false"
+      :toc-first-level="1"
+      :source="content"
+    ></vue-markdown>
+  </div>
 </template>
 
 <script lang="ts">
@@ -25,7 +27,12 @@ const Props = Vue.extend({
   components: { VueMarkdown }
 })
 export default class HelloWorld extends Props {
-  message: string = data[this.id].content;
+  message = data;
+  dataId = this.id;
+
+  get content(): any {
+    return this.message[this.id].content;
+  }
 }
 </script>
 
