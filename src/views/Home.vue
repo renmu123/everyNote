@@ -1,19 +1,13 @@
 <template>
   <el-container class="container">
     <el-aside width="200px" class="aside">
+      <el-button @click="createNotebook">新建文件夹</el-button>
       <el-tree
         :data="data"
         node-key="id"
         default-expand-all
-        @node-drag-start="handleDragStart"
-        @node-drag-enter="handleDragEnter"
-        @node-drag-leave="handleDragLeave"
-        @node-drag-over="handleDragOver"
-        @node-drag-end="handleDragEnd"
-        @node-drop="handleDrop"
         draggable
         :allow-drop="allowDrop"
-        :allow-drag="allowDrag"
         @node-click="handleNodeClick"
       >
       </el-tree>
@@ -30,11 +24,12 @@
 // TODO: 标签功能
 // TODO: resize线
 // TODO: 自定义编辑器
+// TODO: WebDav
 
 import Vue from "vue";
 import Component from "vue-class-component";
 import Article from "@/views/Article.vue";
-// import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 @Component({
   name: "home",
   components: { Article }
@@ -43,7 +38,7 @@ export default class HelloWorld extends Vue {
   dataId = "80336940-715e-4c57-bb03-e08123310869";
   data = [
     {
-      id: 1,
+      id: "11",
       label: "笔记",
       type: "folder",
       children: [
@@ -69,13 +64,13 @@ export default class HelloWorld extends Vue {
         {
           label: "第1个文章",
           title: "第1个文章",
-          id: "80336940-715e-4c57-bb03-e08123310869",
+          id: "80336940-715e-4c57-bb03-e081233108691",
           type: "note"
         },
         {
           label: "第2个文章",
           title: "第2个文章",
-          id: "8d857776-f24b-4f5e-87ae-64513363f624",
+          id: "8d857776-f24b-4f5e-87ae-64513363f6214",
           type: "note"
         }
       ]
@@ -104,13 +99,26 @@ export default class HelloWorld extends Vue {
       // note类型无法拖动到第一层节点
     } else if (draggingNode.data.type === "note") {
       if (dropNode.level === 1) {
-        return false;
+        if (dropNode.data.type === "folder") {
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return true;
       }
     } else {
       return false;
     }
+  }
+  createNotebook() {
+    console.log("新增分类");
+    this.data.push({
+      id: uuidv4(),
+      label: "新增分类",
+      type: "folder",
+      children: []
+    });
   }
   // allowDrag() {}
 }
