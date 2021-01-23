@@ -1,21 +1,39 @@
 <template>
-  <el-container class="container">
-    <el-aside width="200px" class="aside">
-      <el-button @click="createNotebook">新建文件夹</el-button>
-      <el-tree
-        :data="data"
-        node-key="id"
-        default-expand-all
-        draggable
-        :allow-drop="allowDrop"
-        @node-click="handleNodeClick"
-      >
-      </el-tree>
-    </el-aside>
-    <el-main class="main" style="height: 95vh"
-      ><Article :id="dataId"></Article
-    ></el-main>
-  </el-container>
+  <div>
+    <el-container class="container">
+      <el-aside width="200px" class="aside">
+        <el-button @click="createNotebook">新建文件夹</el-button>
+        <!-- <span @click.right.prevent.stop="handleClick($event)">aaaaa</span> -->
+        <el-tree
+          :data="data"
+          node-key="id"
+          default-expand-all
+          draggable
+          :allow-drop="allowDrop"
+          @node-click="handleNodeClick"
+          @node-contextmenu="handleRightClick"
+        >
+        </el-tree>
+      </el-aside>
+      <el-main class="main" style="height: 95vh"
+        ><Article :id="dataId"></Article
+      ></el-main>
+    </el-container>
+    <div>
+      <vue-simple-context-menu
+        elementId="myUniqueId"
+        :options="folderOptions"
+        ref="folderContextMenu"
+        @option-clicked="folderOptionClicked"
+      />
+      <vue-simple-context-menu
+        elementId="myUniqueId11"
+        :options="noteOptions"
+        ref="noteContextMenu"
+        @option-clicked="noteOptionClicked"
+      />
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -30,12 +48,22 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import Article from "@/views/Article.vue";
 import { v4 as uuidv4 } from "uuid";
+import "vue-simple-context-menu/dist/vue-simple-context-menu.css";
+
+import VueSimpleContextMenu from "vue-simple-context-menu";
 @Component({
   name: "home",
-  components: { Article }
+  components: { Article, VueSimpleContextMenu }
 })
 export default class HelloWorld extends Vue {
   dataId = "80336940-715e-4c57-bb03-e08123310869";
+  folderOptions = [
+    { name: "新建笔记", id: 1 },
+    { name: "新建文件夹", id: 2 },
+    { name: "编辑", id: 3 },
+    { name: "删除", id: 4 }
+  ];
+  noteOptions = [{ name: "删除", id: 4 }];
   data = [
     {
       id: "11",
@@ -98,27 +126,44 @@ export default class HelloWorld extends Vue {
       }
       // note类型无法拖动到第一层节点
     } else if (draggingNode.data.type === "note") {
-      if (dropNode.level === 1) {
-        if (dropNode.data.type === "folder") {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return true;
-      }
+      return true;
     } else {
       return false;
     }
   }
   createNotebook() {
-    console.log("新增分类");
     this.data.push({
       id: uuidv4(),
       label: "新增分类",
       type: "folder",
       children: []
     });
+  }
+  handleRightClick(event: MouseEvent, data: any) {
+    // console.log(data);
+    if (data.type === "folder") {
+      this.$refs.noteContextMenu.hideContextMenu();
+      this.$refs.folderContextMenu.showMenu(event, data);
+    } else {
+      this.$refs.folderContextMenu.hideContextMenu();
+      this.$refs.noteContextMenu.showMenu(event, data);
+    }
+  }
+  folderOptionClicked(event: any) {
+    if (event.option.id === 1) {
+      console.log("新建笔记");
+    } else if (event.option.id === 2) {
+      console.log("新建文件夹");
+    } else if (event.option.id === 3) {
+      console.log("编辑");
+    } else if (event.option.id === 4) {
+      console.log("删除");
+    }
+  }
+  noteOptionClicked(event: any) {
+    if (event.option.id === 4) {
+      console.log("删除");
+    }
   }
   // allowDrag() {}
 }
