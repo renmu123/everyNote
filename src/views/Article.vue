@@ -1,19 +1,22 @@
 <template>
   <div>
-    <vue-markdown
-      :toc="true"
-      toc-id="toc"
-      :toc-anchor-link="false"
-      :toc-first-level="1"
-      :source="content"
-    ></vue-markdown>
+    <editor
+      :initialValue="content"
+      :options="editorOptions"
+      height="93vh"
+      initialEditType="wysiwyg"
+      previewStyle="vertical"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import "codemirror/lib/codemirror.css";
+import "@toast-ui/editor/dist/toastui-editor.css";
+
 import Vue from "vue";
 import Component from "vue-class-component";
-import VueMarkdown from "vue-markdown";
+import { Editor } from "@toast-ui/vue-editor";
 import data from "@/mock/articles.js";
 
 const Props = Vue.extend({
@@ -24,11 +27,12 @@ const Props = Vue.extend({
 
 @Component({
   name: "Article",
-  components: { VueMarkdown }
+  components: { editor: Editor }
 })
 export default class HelloWorld extends Props {
   message = data;
   dataId = this.id;
+  editorOptions = {};
 
   get content(): any {
     return this.message[this.id].content;

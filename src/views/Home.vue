@@ -15,7 +15,7 @@
         >
         </el-tree>
       </el-aside>
-      <el-main class="main" style="height: 95vh"
+      <el-main class="main" style="padding-top: 0"
         ><Article :id="dataId"></Article
       ></el-main>
     </el-container>
