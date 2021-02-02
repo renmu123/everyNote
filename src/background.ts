@@ -51,6 +51,7 @@ app.on("ready", async () => {
   if (isDevelopment && !process.env.IS_TEST) {
     try {
       await installExtension(VUEJS_DEVTOOLS);
+      require('devtron').install()
     } catch (e) {
       console.error("Vue Devtools failed to install:", e.toString());
     }
