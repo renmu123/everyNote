@@ -2,8 +2,7 @@
   <div>
     <el-container class="container">
       <el-aside width="200px" class="aside">
-        <el-button @click="createNotebook">新建文件夹</el-button>
-        <!-- <span @click.right.prevent.stop="handleClick($event)">aaaaa</span> -->
+        <el-button @click="createNotebook">新建笔记本</el-button>
         <el-tree
           :data="data"
           node-key="id"
@@ -12,11 +11,12 @@
           :allow-drop="allowDrop"
           @node-click="handleNodeClick"
           @node-contextmenu="handleRightClick"
+          :props="{ label: 'name' }"
         >
         </el-tree>
       </el-aside>
       <el-main class="main" style="padding-top: 0"
-        ><Article :id="dataId"></Article
+        ><Note :id="thisNoteId"></Note
       ></el-main>
     </el-container>
     <div>
@@ -46,70 +46,46 @@
 
 import Vue from "vue";
 import Component from "vue-class-component";
-import Article from "@/views/Article.vue";
+import Note from "@/views/Note.vue";
 import { v4 as uuidv4 } from "uuid";
 import "vue-simple-context-menu/dist/vue-simple-context-menu.css";
-
+import { ipcRenderer } from "electron";
 import VueSimpleContextMenu from "vue-simple-context-menu";
 @Component({
   name: "home",
-  components: { Article, VueSimpleContextMenu }
+  components: { Note, VueSimpleContextMenu },
 })
 export default class HelloWorld extends Vue {
-  dataId = "80336940-715e-4c57-bb03-e08123310869";
   folderOptions = [
     { name: "新建笔记", id: 1 },
     { name: "新建文件夹", id: 2 },
     { name: "编辑", id: 3 },
-    { name: "删除", id: 4 }
+    { name: "删除", id: 4 },
   ];
   noteOptions = [{ name: "删除", id: 4 }];
   data = [
     {
       id: "11",
-      label: "笔记",
-      type: "folder",
+      name: "笔记",
+      type: "notebook",
       children: [
         {
-          label: "第1个文章",
-          title: "第1个文章",
+          name: "aaa",
           id: "80336940-715e-4c57-bb03-e08123310869",
-          type: "note"
+          type: "note",
         },
         {
-          label: "第2个文章",
-          title: "第2个文章",
+          name: "bbb",
           id: "8d857776-f24b-4f5e-87ae-64513363f624",
-          type: "note"
-        }
-      ]
-    },
-    {
-      id: 2,
-      label: "笔记2",
-      type: "folder",
-      children: [
-        {
-          label: "第1个文章",
-          title: "第1个文章",
-          id: "80336940-715e-4c57-bb03-e081233108691",
-          type: "note"
+          type: "note",
         },
-        {
-          label: "第2个文章",
-          title: "第2个文章",
-          id: "8d857776-f24b-4f5e-87ae-64513363f6214",
-          type: "note"
-        }
-      ]
-    }
+      ],
+    },
   ];
-  getArticle(id: string) {
-    this.dataId = id;
-  }
+  thisNoteId = "";
   handleNodeClick(data: any) {
     if (data.type === "note") {
-      this.getArticle(data.id);
+      this.thisNoteId = data.id;
     }
   }
   allowDrop(draggingNode: any, dropNode: any, type: any) {
@@ -117,8 +93,8 @@ export default class HelloWorld extends Vue {
     if (dropNode.data.type === "note" && type === "inner") {
       return false;
     }
-    // folder类型无法拖动到note类型下
-    if (draggingNode.data.type === "folder") {
+    // notebook类型无法拖动到note类型下
+    if (draggingNode.data.type === "notebook") {
       if (dropNode.data.type === "note") {
         return false;
       } else {
@@ -132,21 +108,25 @@ export default class HelloWorld extends Vue {
     }
   }
   createNotebook() {
-    this.data.push({
-      id: uuidv4(),
-      label: "新增分类",
-      type: "folder",
-      children: []
-    });
+    // this.data.push({
+    //   id: uuidv4(),
+    //   name: "新增分类",
+    //   type: "notebook",
+    //   children: [],
+    // });
+    // ipcRenderer.send("asynchronous-message", "ping");
+    console.log("bbb", ipcRenderer.sendSync("db-exec", { dbName: "notebook" })); // prints "pong"
   }
   handleRightClick(event: MouseEvent, data: any) {
     // console.log(data);
-    if (data.type === "folder") {
-      this.$refs.noteContextMenu.hideContextMenu();
-      this.$refs.folderContextMenu.showMenu(event, data);
+    const noteContextMenu: any = this.$refs.noteContextMenu;
+    const folderContextMenu: any = this.$refs.folderContextMenu;
+    if (data.type === "notebook") {
+      noteContextMenu.hideContextMenu();
+      folderContextMenu.showMenu(event, data);
     } else {
-      this.$refs.folderContextMenu.hideContextMenu();
-      this.$refs.noteContextMenu.showMenu(event, data);
+      folderContextMenu.hideContextMenu();
+      noteContextMenu.showMenu(event, data);
     }
   }
   folderOptionClicked(event: any) {
@@ -165,7 +145,6 @@ export default class HelloWorld extends Vue {
       console.log("删除");
     }
   }
-  // allowDrag() {}
 }
 </script>
 

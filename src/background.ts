@@ -1,5 +1,3 @@
-"use strict";
-
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
@@ -13,6 +11,8 @@ const dbFactory = (fileName: string) =>
     timestampData: true,
     autoload: true
   });
+
+let dbObecjt: object = {}
 
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } }
@@ -56,10 +56,10 @@ app.on("ready", async () => {
     }
   }
   createWindow();
-  dbFactory("user.db");
-  dbFactory("note.db");
-  dbFactory("notebook.db");
-  dbFactory("tag.db");
+  for (const dbName of ["note", "notebook", "tag"]) {
+    const db = dbFactory(`${dbName}.db`);
+    dbObecjt[dbName] = db
+  }
 });
 
 // Exit cleanly on request from parent process in development mode.
@@ -78,7 +78,11 @@ if (isDevelopment) {
 }
 
 // {token: token, method: 'insert, findOne', dbname: 'notes', params: {username: "life"}};
-ipcMain.on("db-exce", (event, args) => {
+ipcMain.on("db-exec", (event, args) => {
+
+  const db: any = dbObecjt[args.dbName]
+  console.log("adasd", db)
+  event.returnValue = args.dbName
   // event.reply('asynchronous-reply', 'pong')
   // event.returnValue = 'pong'
 });
