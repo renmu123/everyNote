@@ -24,7 +24,7 @@
         elementId="myUniqueId"
         :options="folderOptions"
         ref="folderContextMenu"
-        @option-clicked="folderOptionClicked"
+        @option-clicked="notebookOptionClicked"
       />
       <vue-simple-context-menu
         elementId="myUniqueId11"
@@ -43,11 +43,12 @@
 // TODO: resize线
 // TODO: 自定义编辑器
 // TODO: WebDav
+// TODO: notebook一列，note列表一列
 
 import Vue from "vue";
 import Component from "vue-class-component";
 import Note from "@/views/Note.vue";
-import { v4 as uuidv4 } from "uuid";
+import { addNotebook, findNotebook, removeNotebook } from "@/api/notebook";
 import "vue-simple-context-menu/dist/vue-simple-context-menu.css";
 import { ipcRenderer } from "electron";
 import VueSimpleContextMenu from "vue-simple-context-menu";
@@ -63,26 +64,33 @@ export default class HelloWorld extends Vue {
     { name: "删除", id: 4 },
   ];
   noteOptions = [{ name: "删除", id: 4 }];
-  data = [
-    {
-      id: "11",
-      name: "笔记",
-      type: "notebook",
-      children: [
-        {
-          name: "aaa",
-          id: "80336940-715e-4c57-bb03-e08123310869",
-          type: "note",
-        },
-        {
-          name: "bbb",
-          id: "8d857776-f24b-4f5e-87ae-64513363f624",
-          type: "note",
-        },
-      ],
-    },
-  ];
+  // data = [
+  //   {
+  //     id: "11",
+  //     name: "笔记",
+  //     type: "notebook",
+  //     children: [
+  //       {
+  //         name: "aaa",
+  //         id: "80336940-715e-4c57-bb03-e08123310869",
+  //         type: "note",
+  //       },
+  //       {
+  //         name: "bbb",
+  //         id: "8d857776-f24b-4f5e-87ae-64513363f624",
+  //         type: "note",
+  //       },
+  //     ],
+  //   },
+  // ];
+  data: any = [];
   thisNoteId = "";
+  mounted() {
+    findNotebook().then((res) => {
+      console.log(res);
+      this.data = res;
+    });
+  }
   handleNodeClick(data: any) {
     if (data.type === "note") {
       this.thisNoteId = data.id;
@@ -108,14 +116,15 @@ export default class HelloWorld extends Vue {
     }
   }
   createNotebook() {
-    // this.data.push({
-    //   id: uuidv4(),
-    //   name: "新增分类",
-    //   type: "notebook",
-    //   children: [],
-    // });
-    // ipcRenderer.send("asynchronous-message", "ping");
-    console.log("bbb", ipcRenderer.sendSync("db-exec", { dbName: "notebook" })); // prints "pong"
+    addNotebook().then((res: { id: string; name: string }) => {
+      console.log("addnotebook", res);
+      this.data.push({
+        id: res.id,
+        name: res.name,
+        type: "notebook",
+        children: [],
+      });
+    });
   }
   handleRightClick(event: MouseEvent, data: any) {
     // console.log(data);
@@ -129,7 +138,7 @@ export default class HelloWorld extends Vue {
       noteContextMenu.showMenu(event, data);
     }
   }
-  folderOptionClicked(event: any) {
+  notebookOptionClicked(event: any) {
     if (event.option.id === 1) {
       console.log("新建笔记");
     } else if (event.option.id === 2) {
@@ -137,12 +146,17 @@ export default class HelloWorld extends Vue {
     } else if (event.option.id === 3) {
       console.log("编辑");
     } else if (event.option.id === 4) {
-      console.log("删除");
+      removeNotebook(event.item.id).then((res) => {
+        console.log("删除成功", res);
+        findNotebook().then((res) => {
+          this.data = res;
+        });
+      });
     }
   }
   noteOptionClicked(event: any) {
     if (event.option.id === 4) {
-      console.log("删除");
+      console.log("删除", event);
     }
   }
 }

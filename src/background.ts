@@ -2,6 +2,7 @@ import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import DataStore from "nedb-promises";
+import notebook from "./lib/db/notebook";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -51,14 +52,13 @@ app.on("ready", async () => {
   if (isDevelopment && !process.env.IS_TEST) {
     try {
       await installExtension(VUEJS_DEVTOOLS);
-      require('devtron').install()
     } catch (e) {
       console.error("Vue Devtools failed to install:", e.toString());
     }
   }
   createWindow();
   for (const dbName of ["note", "notebook", "tag"]) {
-    const db = dbFactory(`${dbName}.db`);
+    const db: DataStore = dbFactory(`${dbName}.db`);
     dbObecjt[dbName] = db
   }
 });
@@ -79,11 +79,19 @@ if (isDevelopment) {
 }
 
 // {token: token, method: 'insert, findOne', dbname: 'notes', params: {username: "life"}};
-ipcMain.on("db-exec", (event, args) => {
+ipcMain.handle("db-exec", async (event, args) => {
 
-  const db: any = dbObecjt[args.dbName]
-  console.log("adasd", db)
-  event.returnValue = args.dbName
-  // event.reply('asynchronous-reply', 'pong')
-  // event.returnValue = 'pong'
+  const dbName: string = args.dbName
+  const menthod: string = args.method
+  const params: object = args.params
+  const db: any = dbObecjt[dbName]
+  let result: any = ""
+  if (dbName === "notebook") {
+    console.log("db", notebook[menthod])
+    result = await notebook[menthod](db, params)
+    console.log('db-name', dbName)
+    console.log("db-params", params)
+    console.log("db-result", result)
+  }
+  return result
 });
