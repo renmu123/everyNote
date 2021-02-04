@@ -1,11 +1,12 @@
 import { ipcRenderer } from "electron";
 
-async function addNotebook(): Promise<{ id: string; name: string }> {
+async function addNotebook(name: string, sort: number): Promise<{ id: string; name: string }> {
   const result = await ipcRenderer.invoke("db-exec", {
     dbName: "notebook",
     method: "add",
     params: {
-      name: "新建笔记本",
+      name: name,
+      sort: sort
     },
   });
   return result;
@@ -17,7 +18,8 @@ async function findNotebook(): Promise<{ id: string; name: string }> {
     method: "find",
     params: {}
   });
-  return result;
+  // arr.sort((a, b) => a.updated_at - b.updated_at);
+  return result.sort((a: any, b: any) => a.sort - b.sort);
 }
 
 async function removeNotebook(id: string): Promise<any> {
@@ -30,4 +32,14 @@ async function removeNotebook(id: string): Promise<any> {
   });
   return result;
 }
-export { addNotebook, findNotebook, removeNotebook }
+
+async function updateNotebook(params: any): Promise<any> {
+  const result = await ipcRenderer.invoke("db-exec", {
+    dbName: "notebook",
+    method: "update",
+    params: params
+  });
+  return result;
+}
+
+export { addNotebook, findNotebook, removeNotebook, updateNotebook }

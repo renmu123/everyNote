@@ -8,16 +8,16 @@
       node-key="id"
       default-expand-all
       draggable
-      :allow-drop="allowDrop"
       @node-click="handleNodeClick"
       @node-contextmenu="handleRightClick"
+      @node-drop="nodeDropSuccess"
       :props="{ label: 'name' }"
     >
     </el-tree>
     <vue-simple-context-menu
       elementId="myUniqueId"
       :options="notebookOption"
-      ref="folderContextMenu"
+      ref="notebookContextMenu"
       @option-clicked="notebookOptionClicked"
     />
   </div>
@@ -27,7 +27,12 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Note from "@/views/Note.vue";
-import { addNotebook, findNotebook, removeNotebook } from "@/api/notebook";
+import {
+  addNotebook,
+  findNotebook,
+  removeNotebook,
+  updateNotebook,
+} from "@/api/notebook";
 import "vue-simple-context-menu/dist/vue-simple-context-menu.css";
 import VueSimpleContextMenu from "vue-simple-context-menu";
 @Component({
@@ -54,61 +59,52 @@ export default class HelloWorld extends Vue {
     this.thisNotebookId = data.id;
   }
   createNotebook() {
-    addNotebook().then((res: { id: string; name: string }) => {
-      console.log("addnotebook", res);
-      this.data.push({
-        id: res.id,
-        name: res.name,
-        type: "notebook",
-        children: [],
-      });
-    });
+    const order = this.data.length * 65536;
+    addNotebook("新建笔记本" + order, order).then(
+      (res: { id: string; name: string }) => {
+        console.log("addnotebook", res);
+        this.data.push(res);
+      }
+    );
   }
   handleRightClick(event: MouseEvent, data: any) {
-    const noteContextMenu: any = this.$refs.noteContextMenu;
-    const folderContextMenu: any = this.$refs.folderContextMenu;
-    if (data.type === "notebook") {
-      noteContextMenu.hideContextMenu();
-      folderContextMenu.showMenu(event, data);
-    } else {
-      folderContextMenu.hideContextMenu();
-      noteContextMenu.showMenu(event, data);
-    }
+    const notebookContextMenu: any = this.$refs.notebookContextMenu;
+    notebookContextMenu.showMenu(event, data);
+    // notebookContextMenu.hideContextMenu();
   }
   notebookOptionClicked(event: any) {
     if (event.option.id === 1) {
       console.log("新建笔记");
     } else if (event.option.id === 2) {
-      console.log("新建文件夹");
+      console.log("新建笔记本");
     } else if (event.option.id === 3) {
       console.log("编辑");
     } else if (event.option.id === 4) {
       removeNotebook(event.item.id).then((res) => {
-        console.log("删除成功", res);
+        console.log(event, event.item.id, "删除成功", res);
         findNotebook().then((res) => {
           this.data = res;
         });
       });
     }
   }
-  allowDrop(draggingNode: any, dropNode: any, type: any) {
-    // 当目标节点数据类型为note且类型为innner时，无法拖动
-    if (dropNode.data.type === "note" && type === "inner") {
-      return false;
-    }
-    // notebook类型无法拖动到note类型下
-    if (draggingNode.data.type === "notebook") {
-      if (dropNode.data.type === "note") {
-        return false;
-      } else {
-        return true;
-      }
-      // note类型无法拖动到第一层节点
-    } else if (draggingNode.data.type === "note") {
-      return true;
-    } else {
-      return false;
-    }
+  // postion: before、after、inner
+  nodeDropSuccess(
+    draggingNode: any,
+    dropNode: any,
+    postion: any,
+    event: DragEvent
+  ) {
+    console.log(draggingNode, dropNode, postion, event, this.data);
+    // const data = dropNode.data;
+    // console.log(draggingNode.data.order, dropNode.data.order);
+    // console.log(draggingNode.data.order, dropNode.data.order);
+    // updateNotebook(draggingNode.data).then(() => {
+    //   console.log("更新成功draggingnode");
+    //   updateNotebook(dropNode.data).then(() => {
+    //     console.log("更新成功dropnode");
+    //   });
+    // });
   }
 }
 </script>

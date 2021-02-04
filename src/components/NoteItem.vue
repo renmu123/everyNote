@@ -2,7 +2,6 @@
   <div>
     <el-container class="container">
       <el-aside width="200px" class="aside">
-        <el-button @click="createNotebook">新建笔记本</el-button>
         <el-tree
           :data="data"
           node-key="id"
@@ -64,25 +63,6 @@ export default class HelloWorld extends Vue {
     { name: "删除", id: 4 },
   ];
   noteOptions = [{ name: "删除", id: 4 }];
-  // data = [
-  //   {
-  //     id: "11",
-  //     name: "笔记",
-  //     type: "notebook",
-  //     children: [
-  //       {
-  //         name: "aaa",
-  //         id: "80336940-715e-4c57-bb03-e08123310869",
-  //         type: "note",
-  //       },
-  //       {
-  //         name: "bbb",
-  //         id: "8d857776-f24b-4f5e-87ae-64513363f624",
-  //         type: "note",
-  //       },
-  //     ],
-  //   },
-  // ];
   data: any = [];
   thisNoteId = "";
   mounted() {

@@ -6,13 +6,12 @@ interface Id {
 
 interface NotebookAdd {
   name: string
+  order: number
 }
 
 interface NotebookUpdate extends Id, NotebookAdd {
 
 }
-
-
 
 let notebook: object = {
   findOne: async function (db: any, params: Id): Promise<any> {
@@ -20,7 +19,6 @@ let notebook: object = {
     return await db.findOne({ id: id })
   },
   find: async function (db: any): Promise<any> {
-    console.log("find", db.find())
     return await db.find()
   },
   remove: async function (db: any, params: Id): Promise<number> {
@@ -29,19 +27,26 @@ let notebook: object = {
   },
   add: async function (db: any, params: NotebookAdd): Promise<any> {
     const name: string = params.name
+    const order: number = params.order
     const data = {
       id: uuidv4(),
       name: name,
+      order: order,
       type: "notebook"
     }
     const result = await db.insert(data)
     console.log("notebook", result)
     return result
   },
-  update: async function (db: any, params: NotebookUpdate): Promise<any> {
+  update: async function (db: any, params: any): Promise<any> {
     const id: string = params.id
-    const content: string = params.name
-    await db.update({ id: id }, content)
+    const content: NotebookUpdate = {
+      id: id,
+      name: params.name,
+      order: params.order
+    }
+    console.log(id, content)
+    return await db.update({ id: id }, content)
   }
 }
 
