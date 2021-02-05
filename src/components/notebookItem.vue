@@ -54,11 +54,16 @@ export default class HelloWorld extends Vue {
       this.data = res;
     });
   }
+
+  get dataIdArray(): string[] {
+    // return ["aaa", "bb"]
+    return this.data.map((d: { id: string }): string => d.id);
+  }
   handleNodeClick(data: any) {
     console.log(this.thisNotebookId);
     this.thisNotebookId = data.id;
   }
-  createNotebook() {
+  createNotebook(): void {
     const order = this.data.length * 65536;
     addNotebook("新建笔记本" + order, order).then(
       (res: { id: string; name: string }) => {
@@ -67,12 +72,13 @@ export default class HelloWorld extends Vue {
       }
     );
   }
-  handleRightClick(event: MouseEvent, data: any) {
+
+  handleRightClick(event: MouseEvent, data: any): void {
     const notebookContextMenu: any = this.$refs.notebookContextMenu;
+    notebookContextMenu.hideContextMenu();
     notebookContextMenu.showMenu(event, data);
-    // notebookContextMenu.hideContextMenu();
   }
-  notebookOptionClicked(event: any) {
+  notebookOptionClicked(event: any): void {
     if (event.option.id === 1) {
       console.log("新建笔记");
     } else if (event.option.id === 2) {
@@ -88,6 +94,19 @@ export default class HelloWorld extends Vue {
       });
     }
   }
+  findLastNextNode(nodeId: string): string {
+    const nodeIndex = this.dataIdArray.find((ele) => ele === nodeId);
+    console.log("aa", nodeIndex);
+    // let lastNode = "";
+    // for (const notebook of this.data) {
+    //   if (notebook.id === nodeId) {
+    //   }
+    // }
+    return "aa";
+  }
+  // findNextNode(nodeId: string): string {
+  //   return "aaa";
+  // }
   // postion: before、after、inner
   nodeDropSuccess(
     draggingNode: any,
@@ -96,6 +115,8 @@ export default class HelloWorld extends Vue {
     event: DragEvent
   ) {
     console.log(draggingNode, dropNode, postion, event, this.data);
+    const dropNodeId: string = dropNode.data.id;
+    const lastNodeId: string = this.findLastNextNode(dropNodeId);
     // const data = dropNode.data;
     // console.log(draggingNode.data.order, dropNode.data.order);
     // console.log(draggingNode.data.order, dropNode.data.order);
