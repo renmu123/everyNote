@@ -49,14 +49,14 @@ export default class HelloWorld extends Props {
   get noteId(): string {
     return this.id;
   }
-  @Watch("noteId")
-  noteIdChange(value: string, oldValue: string) {
-    const content = this.data[this.noteId].content;
-    console.log("aaa", content);
-    const toastuiEditor: any = this.$refs.toastuiEditor;
-    toastuiEditor.invoke("setMarkdown", content);
-    console.log("bbb", this.noteId);
-  }
+  // @Watch("noteId")
+  // noteIdChange(value: string, oldValue: string) {
+  //   const content = this.data[this.noteId].content;
+  //   console.log("aaa", content);
+  //   const toastuiEditor: any = this.$refs.toastuiEditor;
+  //   toastuiEditor.invoke("setMarkdown", content);
+  //   console.log("bbb", this.noteId);
+  // }
 }
 </script>
 

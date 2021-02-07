@@ -1,13 +1,10 @@
 import { ipcRenderer } from "electron";
 
-async function addNotebook(name: string, order: number): Promise<{ id: string; name: string }> {
+async function addNotebook(params: any): Promise<{ id: string; name: string }> {
   const result = await ipcRenderer.invoke("db-exec", {
     dbName: "notebook",
     method: "add",
-    params: {
-      name: name,
-      order: order
-    },
+    params: params
   });
   return result;
 }

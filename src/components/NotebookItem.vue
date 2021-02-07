@@ -64,12 +64,15 @@ export default class HelloWorld extends Vue {
   }
   createNotebook(): void {
     const order = (this.data.length + 1) * 65536;
-    addNotebook("新建笔记本" + order, order).then(
-      (res: { id: string; name: string }) => {
-        console.log("addnotebook", res);
-        this.data.push(res);
-      }
-    );
+    const params = {
+      name: "新建笔记本" + order,
+      order: order,
+      parentId: null,
+    };
+    addNotebook(params).then((res: { id: string; name: string }) => {
+      console.log("addnotebook", res);
+      this.data.push(res);
+    });
   }
 
   handleRightClick(event: MouseEvent, data: any): void {
@@ -93,18 +96,9 @@ export default class HelloWorld extends Vue {
       });
     }
   }
-  findNodeIndex(nodeId: string): number {
-    const nodeIndex = this.dataIdArray.findIndex((ele) => ele === nodeId);
+  findNodeIndex(dataIdArray: string[], nodeId: string): number {
+    const nodeIndex = dataIdArray.findIndex((ele) => ele === nodeId);
     return nodeIndex;
-  }
-  findTopNode(node: {
-    level: number;
-    parent: { level: number; parent: number };
-  }) {
-    while (node.level !== 1) {
-      node = node.parent;
-    }
-    return node;
   }
   // postion: before、after、inner
   nodeDropSuccess(
@@ -114,31 +108,47 @@ export default class HelloWorld extends Vue {
     event: DragEvent
   ) {
     console.log(draggingNode, dropNode, postion, event, this.data);
-    const draggingNodeData: { id: string; order: number } = draggingNode.data;
+    const draggingNodeData: {
+      id: string;
+      order: number;
+      parentId: string | null;
+    } = draggingNode.data;
 
-    if (postion !== "inner") {
-      const nodeIndex: number = this.findNodeIndex(draggingNodeData.id);
-      if (nodeIndex === 0) {
-        console.log("第一位");
-        draggingNodeData.order = this.data[nodeIndex + 1].order / 2;
-      } else if (nodeIndex === this.data.length - 1) {
-        draggingNodeData.order = this.data[nodeIndex - 1].order + 65536;
-        console.log("最后一位");
-      } else {
-        console.log("中间", nodeIndex);
-        draggingNodeData.order =
-          (this.data[nodeIndex - 1].order + this.data[nodeIndex + 1].order) / 2;
-      }
-      updateNotebook(draggingNodeData).then((res) => {
-        console.log("更新成功", res);
-      });
+    let data: { id: string; order: number }[];
+    if (dropNode.parent.level === 0 && postion !== "inner") {
+      draggingNodeData.parentId = null;
+      data = this.data;
     } else {
-      const topNode = this.findTopNode(dropNode);
-      updateNotebook(topNode.data).then((res) => {
-        console.log("更新成功", res, topNode.data);
-      });
-      // const nodeIndex: number = this.findNodeIndex(draggingNodeData.id);
+      if (postion === "inner") {
+        data = dropNode.data.children;
+        draggingNodeData.parentId = dropNode.data.id;
+      } else {
+        data = dropNode.parent.data.children;
+        draggingNodeData.parentId = dropNode.parent.data.id;
+      }
     }
+    const dataIdArray = data.map((d: { id: string }): string => d.id);
+    const nodeIndex = this.findNodeIndex(dataIdArray, draggingNodeData.id);
+
+    console.log("data", data, dataIdArray, draggingNodeData.id);
+    if (nodeIndex === 0) {
+      console.log("第一位");
+      if (data.length === 1) {
+        draggingNodeData.order = data.length * 65536;
+      } else {
+        draggingNodeData.order = data[nodeIndex + 1].order / 2;
+      }
+    } else if (nodeIndex === data.length - 1) {
+      draggingNodeData.order = data[nodeIndex - 1].order + 65536;
+      console.log("最后一位");
+    } else {
+      console.log("中间", nodeIndex);
+      draggingNodeData.order =
+        (data[nodeIndex - 1].order + data[nodeIndex + 1].order) / 2;
+    }
+    updateNotebook(draggingNodeData).then((res) => {
+      console.log("更新成功", res, draggingNodeData);
+    });
   }
 }
 </script>

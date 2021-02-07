@@ -49,7 +49,6 @@ import Component from "vue-class-component";
 import Note from "@/views/Note.vue";
 import { addNotebook, findNotebook, removeNotebook } from "@/api/notebook";
 import "vue-simple-context-menu/dist/vue-simple-context-menu.css";
-import { ipcRenderer } from "electron";
 import VueSimpleContextMenu from "vue-simple-context-menu";
 @Component({
   name: "home",
@@ -95,17 +94,17 @@ export default class HelloWorld extends Vue {
       return false;
     }
   }
-  createNotebook() {
-    addNotebook().then((res: { id: string; name: string }) => {
-      console.log("addnotebook", res);
-      this.data.push({
-        id: res.id,
-        name: res.name,
-        type: "notebook",
-        children: [],
-      });
-    });
-  }
+  // createNotebook() {
+  //   addNotebook().then((res: { id: string; name: string }) => {
+  //     console.log("addnotebook", res);
+  //     this.data.push({
+  //       id: res.id,
+  //       name: res.name,
+  //       type: "notebook",
+  //       children: [],
+  //     });
+  //   });
+  // }
   handleRightClick(event: MouseEvent, data: any) {
     // console.log(data);
     const noteContextMenu: any = this.$refs.noteContextMenu;

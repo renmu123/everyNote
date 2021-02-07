@@ -13,7 +13,13 @@ const dbFactory = (fileName: string) =>
     autoload: true
   });
 
-let dbObecjt: object = {}
+interface DbObject {
+  note: any
+  notebook: any
+  tag: any
+}
+
+let dbObecjt: { [index: string]: any } = {}
 
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } }
@@ -87,11 +93,11 @@ ipcMain.handle("db-exec", async (event, args) => {
   const db: any = dbObecjt[dbName]
   let result: any = ""
   if (dbName === "notebook") {
-    console.log("db", notebook[menthod])
-    result = await notebook[menthod](db, params)
-    console.log('db-name', dbName)
-    console.log("db-params", params)
-    console.log("db-result", result)
+    // console.log("db", (notebook as any)[menthod])
+    result = await (notebook as any)[menthod](db, params)
+    // console.log('db-name', dbName)
+    // console.log("db-params", params)
+    // console.log("db-result", result)
   }
   return result
 });
