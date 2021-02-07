@@ -56,7 +56,6 @@ export default class HelloWorld extends Vue {
   }
 
   get dataIdArray(): string[] {
-    // return ["aaa", "bb"]
     return this.data.map((d: { id: string }): string => d.id);
   }
   handleNodeClick(data: any) {
@@ -64,7 +63,7 @@ export default class HelloWorld extends Vue {
     this.thisNotebookId = data.id;
   }
   createNotebook(): void {
-    const order = this.data.length * 65536;
+    const order = (this.data.length + 1) * 65536;
     addNotebook("新建笔记本" + order, order).then(
       (res: { id: string; name: string }) => {
         console.log("addnotebook", res);
@@ -94,19 +93,19 @@ export default class HelloWorld extends Vue {
       });
     }
   }
-  findLastNextNode(nodeId: string): string {
-    const nodeIndex = this.dataIdArray.find((ele) => ele === nodeId);
-    console.log("aa", nodeIndex);
-    // let lastNode = "";
-    // for (const notebook of this.data) {
-    //   if (notebook.id === nodeId) {
-    //   }
-    // }
-    return "aa";
+  findNodeIndex(nodeId: string): number {
+    const nodeIndex = this.dataIdArray.findIndex((ele) => ele === nodeId);
+    return nodeIndex;
   }
-  // findNextNode(nodeId: string): string {
-  //   return "aaa";
-  // }
+  findTopNode(node: {
+    level: number;
+    parent: { level: number; parent: number };
+  }) {
+    while (node.level !== 1) {
+      node = node.parent;
+    }
+    return node;
+  }
   // postion: before、after、inner
   nodeDropSuccess(
     draggingNode: any,
@@ -115,17 +114,31 @@ export default class HelloWorld extends Vue {
     event: DragEvent
   ) {
     console.log(draggingNode, dropNode, postion, event, this.data);
-    const dropNodeId: string = dropNode.data.id;
-    const lastNodeId: string = this.findLastNextNode(dropNodeId);
-    // const data = dropNode.data;
-    // console.log(draggingNode.data.order, dropNode.data.order);
-    // console.log(draggingNode.data.order, dropNode.data.order);
-    // updateNotebook(draggingNode.data).then(() => {
-    //   console.log("更新成功draggingnode");
-    //   updateNotebook(dropNode.data).then(() => {
-    //     console.log("更新成功dropnode");
-    //   });
-    // });
+    const draggingNodeData: { id: string; order: number } = draggingNode.data;
+
+    if (postion !== "inner") {
+      const nodeIndex: number = this.findNodeIndex(draggingNodeData.id);
+      if (nodeIndex === 0) {
+        console.log("第一位");
+        draggingNodeData.order = this.data[nodeIndex + 1].order / 2;
+      } else if (nodeIndex === this.data.length - 1) {
+        draggingNodeData.order = this.data[nodeIndex - 1].order + 65536;
+        console.log("最后一位");
+      } else {
+        console.log("中间", nodeIndex);
+        draggingNodeData.order =
+          (this.data[nodeIndex - 1].order + this.data[nodeIndex + 1].order) / 2;
+      }
+      updateNotebook(draggingNodeData).then((res) => {
+        console.log("更新成功", res);
+      });
+    } else {
+      const topNode = this.findTopNode(dropNode);
+      updateNotebook(topNode.data).then((res) => {
+        console.log("更新成功", res, topNode.data);
+      });
+      // const nodeIndex: number = this.findNodeIndex(draggingNodeData.id);
+    }
   }
 }
 </script>

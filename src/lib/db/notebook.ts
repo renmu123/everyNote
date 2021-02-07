@@ -7,6 +7,7 @@ interface Id {
 interface NotebookAdd {
   name: string
   order: number
+  children: object
 }
 
 interface NotebookUpdate extends Id, NotebookAdd {
@@ -43,7 +44,8 @@ let notebook: object = {
     const content: NotebookUpdate = {
       id: id,
       name: params.name,
-      order: params.order
+      order: params.order,
+      children: params.children
     }
     console.log(id, content)
     return await db.update({ id: id }, content)
