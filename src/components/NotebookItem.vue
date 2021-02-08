@@ -41,13 +41,11 @@ import VueSimpleContextMenu from "vue-simple-context-menu";
 })
 export default class HelloWorld extends Vue {
   notebookOption = [
-    { name: "新建笔记", id: 1 },
-    { name: "新建文件夹", id: 2 },
+    { name: "新建笔记本", id: 2 },
     { name: "编辑", id: 3 },
     { name: "删除", id: 4 },
   ];
   data: any = [];
-  thisNotebookId = "";
   mounted() {
     findNotebook().then((res) => {
       console.log(res);
@@ -59,8 +57,8 @@ export default class HelloWorld extends Vue {
     return this.data.map((d: { id: string }): string => d.id);
   }
   handleNodeClick(data: any) {
-    console.log(this.thisNotebookId);
-    this.thisNotebookId = data.id;
+    this.$store.commit("setThisNoteBookId", data.id);
+    this.$emit("click", this.data);
   }
   createNotebook(): void {
     const order = (this.data.length + 1) * 65536;
@@ -81,10 +79,9 @@ export default class HelloWorld extends Vue {
     notebookContextMenu.showMenu(event, data);
   }
   notebookOptionClicked(event: any): void {
-    if (event.option.id === 1) {
-      console.log("新建笔记");
-    } else if (event.option.id === 2) {
+    if (event.option.id === 2) {
       console.log("新建笔记本");
+      this.createNotebook();
     } else if (event.option.id === 3) {
       console.log("编辑");
     } else if (event.option.id === 4) {
@@ -164,5 +161,8 @@ export default class HelloWorld extends Vue {
 }
 .container {
   margin-top: 20px;
+}
+.el-tree-node__content:hover {
+  font-weight: bold;
 }
 </style>

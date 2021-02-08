@@ -1,26 +1,26 @@
 import { ipcRenderer } from "electron";
 
-async function addNotebook(params: any): Promise<{ id: string; name: string }> {
+async function addNote(params: any): Promise<{ id: string; name: string }> {
   const result = await ipcRenderer.invoke("db-exec", {
-    dbName: "notebook",
+    dbName: "note",
     method: "add",
     params: params
   });
   return result;
 }
 
-async function findNotebook(): Promise<{ id: string; name: string }> {
+async function findNote(): Promise<{ id: string; name: string }> {
   const result = await ipcRenderer.invoke("db-exec", {
-    dbName: "notebook",
+    dbName: "note",
     method: "find",
     params: {}
   });
   return result.sort((a: any, b: any) => a.order - b.order);
 }
 
-async function removeNotebook(id: string): Promise<any> {
+async function removeNote(id: string): Promise<any> {
   const result = await ipcRenderer.invoke("db-exec", {
-    dbName: "notebook",
+    dbName: "note",
     method: "remove",
     params: {
       id: id
@@ -29,13 +29,13 @@ async function removeNotebook(id: string): Promise<any> {
   return result;
 }
 
-async function updateNotebook(params: any): Promise<any> {
+async function updateNote(params: any): Promise<any> {
   const result = await ipcRenderer.invoke("db-exec", {
-    dbName: "notebook",
+    dbName: "note",
     method: "update",
     params: params
   });
   return result;
 }
 
-export { addNotebook, findNotebook, removeNotebook, updateNotebook }
+export { addNote, findNote, removeNote, updateNote }
